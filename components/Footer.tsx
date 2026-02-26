@@ -11,7 +11,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenTerms, onOp
     <footer className="border-t border-slate-200 py-8 mt-auto bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 text-center">
         <p className="text-slate-400 text-sm mb-4">
-          &copy; {new Date().getFullYear()} Validator. Built for founders.
+          &copy; {new Date().getFullYear()} ZauriScore. Built for founders.
         </p>
         <div className="flex justify-center gap-6 text-xs text-slate-400">
           <button onClick={onOpenPrivacy} className="hover:text-slate-600 transition-colors">Privacy Policy</button>

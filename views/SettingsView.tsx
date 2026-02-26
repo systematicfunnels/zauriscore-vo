@@ -179,7 +179,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     try {
       const zip = new JSZip();
       zip.file("validation_history.json", JSON.stringify(history, null, 2));
-      zip.file("README.txt", "This archive contains your validation history from Validator AI.");
+      zip.file("README.txt", "This archive contains your validation history from ZauriScore.");
 
       const reportsFolder = zip.folder("reports");
       
@@ -200,7 +200,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       const url = window.URL.createObjectURL(content);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Validator_Export_${new Date().toISOString().split('T')[0]}.zip`;
+      link.download = `ZauriScore_Export_${new Date().toISOString().split('T')[0]}.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { ViewState, ValidationReport, UserProfile } from './types';
+import type { ViewState, ValidationReport, UserProfile, CustomModelConfig } from './types';
 import { MOCK_REPORT } from './types';
 import { validateIdea } from './services/geminiService';
 import { api } from './services/api'; 
@@ -24,7 +24,7 @@ export const App: React.FC = () => {
   // --- User State ---
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
-      const saved = localStorage.getItem('validator_user');
+      const saved = localStorage.getItem('zauriscore_user');
       return saved ? JSON.parse(saved) : null;
     } catch { return null; }
   });
@@ -34,7 +34,7 @@ export const App: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('mode') === 'waitlist') return 'marketing';
 
-    if (localStorage.getItem('validator_user')) return 'dashboard';
+    if (localStorage.getItem('zauriscore_user')) return 'dashboard';
     return 'landing';
   });
 
@@ -65,13 +65,13 @@ export const App: React.FC = () => {
       // Local Storage Load (Guest)
       if (!user) {
         try {
-          const savedHistory = localStorage.getItem('validator_history');
+          const savedHistory = localStorage.getItem('zauriscore_history');
           if (savedHistory) setHistory(JSON.parse(savedHistory));
           
-          const savedCredits = localStorage.getItem('validator_credits');
+          const savedCredits = localStorage.getItem('zauriscore_credits');
           if (savedCredits) setCredits(parseInt(savedCredits));
           
-          const savedLifetime = localStorage.getItem('validator_lifetime');
+          const savedLifetime = localStorage.getItem('zauriscore_lifetime');
           if (savedLifetime === 'true') setIsLifetime(true);
         } catch (e) { console.error(e); }
         return;
@@ -154,24 +154,24 @@ export const App: React.FC = () => {
     
     if (plan === 'lifetime') {
         setIsLifetime(true);
-        if (!user) localStorage.setItem('validator_lifetime', 'true');
+        if (!user) localStorage.setItem('zauriscore_lifetime', 'true');
     } else {
         const newCredits = credits + 1;
         setCredits(newCredits);
-        if (!user) localStorage.setItem('validator_credits', newCredits.toString());
+        if (!user) localStorage.setItem('zauriscore_credits', newCredits.toString());
     }
     
     setPurchasedPlan(plan);
     setCurrentView('purchase_success');
   };
 
-  const handleLogin = async (email: string, name: string) => {
+  const handleLogin = async (email: string, name: string, oauthUser?: any) => {
     try {
-      const dbUser = await api.login(email, name);
+      const dbUser = oauthUser || await api.login(email, name);
       setUser(dbUser);
       setCredits(dbUser.credits);
       setIsLifetime(dbUser.isPro);
-      localStorage.setItem('validator_user', JSON.stringify(dbUser));
+      localStorage.setItem('zauriscore_user', JSON.stringify(dbUser));
       setCurrentView('dashboard');
     } catch (e) {
       console.error("Login failed", e);
@@ -190,7 +190,7 @@ export const App: React.FC = () => {
     
     const updated = { ...user, ...data };
     setUser(updated);
-    localStorage.setItem('validator_user', JSON.stringify(updated));
+    localStorage.setItem('zauriscore_user', JSON.stringify(updated));
 
     try {
         await api.updateProfile(user.email, data);
@@ -209,7 +209,7 @@ export const App: React.FC = () => {
         }
     }
     
-    const keysToRemove = ['validator_user', 'validator_history', 'validator_credits', 'validator_lifetime'];
+    const keysToRemove = ['zauriscore_user', 'zauriscore_history', 'zauriscore_credits', 'zauriscore_lifetime'];
     keysToRemove.forEach(key => localStorage.removeItem(key));
     
     setHistory([]);
@@ -239,13 +239,11 @@ export const App: React.FC = () => {
     setCurrentView('report');
   };
 
-  const handleSubmitIdea = async (idea: string, attachment?: { mimeType: string, data: string }, customModelId?: string) => {
+  const handleSubmitIdea = async (idea: string, attachment?: { mimeType: string, data: string }, customModel?: CustomModelConfig) => {
     setCurrentView('loading');
     setError(null);
     setOriginalIdea(idea);
-    setActiveCustomModelId(customModelId);
-    
-    const customModel = user?.preferences?.customModels?.find(m => m.id === customModelId);
+    setActiveCustomModelId(customModel?.id);
     
     try {
       // Pass user email to secure backend to enforce server-side credit check
@@ -272,16 +270,16 @@ export const App: React.FC = () => {
                setCredits(newCredits);
                const updatedUser = { ...user, credits: newCredits };
                setUser(updatedUser);
-               localStorage.setItem('validator_user', JSON.stringify(updatedUser));
+               localStorage.setItem('zauriscore_user', JSON.stringify(updatedUser));
            }
         } else {
             const guestHistory = [finalReport, ...history];
-            localStorage.setItem('validator_history', JSON.stringify(guestHistory));
+            localStorage.setItem('zauriscore_history', JSON.stringify(guestHistory));
             
             if (!isLifetime) {
                 const newCredits = credits - 1;
                 setCredits(newCredits);
-                localStorage.setItem('validator_credits', newCredits.toString());
+                localStorage.setItem('zauriscore_credits', newCredits.toString());
             }
         }
       }
@@ -306,11 +304,11 @@ export const App: React.FC = () => {
           const newCredits = credits + 1;
           setCredits(newCredits);
           if (user) handleUpdateProfile({ credits: newCredits });
-          else localStorage.setItem('validator_credits', newCredits.toString());
+          else localStorage.setItem('zauriscore_credits', newCredits.toString());
       } else {
           setIsLifetime(true);
           if (user) handleUpdateProfile({ isPro: true });
-          else localStorage.setItem('validator_lifetime', 'true');
+          else localStorage.setItem('zauriscore_lifetime', 'true');
       }
       setPurchasedPlan(plan);
       setCurrentView('purchase_success');
@@ -357,7 +355,7 @@ export const App: React.FC = () => {
               <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center group-hover:bg-slate-800 transition-colors">
                 <span className="text-white font-bold text-lg">V</span>
               </div>
-              <span className="font-bold text-lg tracking-tight hidden sm:block">Validator</span>
+              <span className="font-bold text-lg tracking-tight hidden sm:block">ZauriScore</span>
             </div>
             
             <div className="flex items-center gap-3 sm:gap-4">
@@ -543,7 +541,7 @@ export const App: React.FC = () => {
 
       <Modal isOpen={isTermsOpen} onClose={() => setTermsOpen(false)} title="Terms of Service">
         <div className="space-y-4 text-slate-600 leading-relaxed text-sm">
-            <p>By using Validator, you agree to these terms.</p>
+            <p>By using ZauriScore, you agree to these terms.</p>
             <h4 className="font-bold text-slate-900">Usage</h4>
             <p>This tool provides AI-generated feedback. We are not responsible for business decisions made based on this output.</p>
         </div>

@@ -32,10 +32,10 @@ export const api = {
             } else if (customModel.provider !== 'Google') {
                 // Non-Google models have strict attachment limitations in this app architecture
                 if ((customModel.provider === 'OpenAI' || customModel.provider === 'OpenRouter') && !isImage) {
-                    throw new Error(`${customModel.provider} only supports image attachments. Please remove the ${isPdf ? 'PDF' : isAudio ? 'Audio' : 'file'} or switch to Validator AI / Google.`);
+                    throw new Error(`${customModel.provider} only supports image attachments. Please remove the ${isPdf ? 'PDF' : isAudio ? 'Audio' : 'file'} or switch to ZauriScore / Google.`);
                 }
                 if (customModel.provider === 'Anthropic' && !isImage && !isPdf) {
-                    throw new Error(`Anthropic only supports image and PDF attachments. Please remove the ${isAudio ? 'Audio' : 'file'} or switch to Validator AI / Google.`);
+                    throw new Error(`Anthropic only supports image and PDF attachments. Please remove the ${isAudio ? 'Audio' : 'file'} or switch to ZauriScore / Google.`);
                 }
             }
         }
@@ -148,8 +148,8 @@ The JSON must strictly match this schema:
             } else if (customModel.provider === 'OpenRouter') {
                 endpoint = 'https://openrouter.ai/api/v1/chat/completions';
                 headers['Authorization'] = `Bearer ${customModel.apiKey}`;
-                headers['HTTP-Referer'] = typeof window !== 'undefined' ? window.location.origin : 'https://validator.ai';
-                headers['X-Title'] = 'Validator AI';
+                headers['HTTP-Referer'] = typeof window !== 'undefined' ? window.location.origin : 'https://zauriscore.com';
+                headers['X-Title'] = 'ZauriScore';
 
                 const contentArray: any[] = [{ type: "text", text: `${systemPrompt}\n\n${enforcedUserPrompt}` }];
                 if (attachment && !isTextAttachment && attachment.mimeType.startsWith('image/')) {
@@ -413,8 +413,8 @@ The JSON must strictly match this schema:
             } else if (customModel.provider === 'OpenRouter') {
                 endpoint = 'https://openrouter.ai/api/v1/chat/completions';
                 headers['Authorization'] = `Bearer ${customModel.apiKey}`;
-                headers['HTTP-Referer'] = typeof window !== 'undefined' ? window.location.origin : 'https://validator.ai';
-                headers['X-Title'] = 'Validator AI';
+                headers['HTTP-Referer'] = typeof window !== 'undefined' ? window.location.origin : 'https://zauriscore.com';
+                headers['X-Title'] = 'ZauriScore';
                 payload = {
                     model: customModel.model,
                     messages: [
@@ -492,6 +492,13 @@ The JSON must strictly match this schema:
   },
 
   // --- Auth & User ---
+  getGoogleAuthUrl: async (): Promise<string> => {
+    const res = await fetch(`${API_URL}/auth/google/url`);
+    if (!res.ok) throw new Error('Failed to get Google Auth URL');
+    const { url } = await res.json();
+    return url;
+  },
+
   login: async (email: string, name: string): Promise<UserProfile> => {
     try {
       const res = await fetch(`${API_URL}/users/login`, {
@@ -503,7 +510,7 @@ The JSON must strictly match this schema:
       return await res.json();
     } catch (error) {
       // Check local storage first so we don't reset their credits on every reload
-      const saved = localStorage.getItem('validator_user');
+      const saved = localStorage.getItem('zauriscore_user');
       if (saved) {
          const parsed = JSON.parse(saved);
          if (parsed.email === email) return parsed;
@@ -532,7 +539,7 @@ The JSON must strictly match this schema:
       if (!res.ok) throw new Error('Update failed');
       return await res.json();
     } catch (error) {
-      const saved = localStorage.getItem('validator_user');
+      const saved = localStorage.getItem('zauriscore_user');
       if (saved) {
           const parsed = JSON.parse(saved);
           return { ...parsed, ...data };
@@ -573,7 +580,7 @@ The JSON must strictly match this schema:
       if (!res.ok) throw new Error('Failed to fetch history');
       return await res.json();
     } catch (error) {
-      const local = localStorage.getItem('validator_history');
+      const local = localStorage.getItem('zauriscore_history');
       return local ? JSON.parse(local) : [];
     }
   },
@@ -587,7 +594,7 @@ The JSON must strictly match this schema:
       if (!res.ok) throw new Error('Failed to deduct credit');
       return await res.json();
     } catch (error) {
-      const saved = localStorage.getItem('validator_user');
+      const saved = localStorage.getItem('zauriscore_user');
       if (saved) {
           const parsed = JSON.parse(saved);
           return { credits: Math.max(0, parsed.credits - 1) };
@@ -610,10 +617,10 @@ The JSON must strictly match this schema:
         // Fully functional local fallback using localStorage if backend is offline
         await new Promise(resolve => setTimeout(resolve, 600)); 
         
-        const existingList = JSON.parse(localStorage.getItem('validator_waitlist') || '[]');
+        const existingList = JSON.parse(localStorage.getItem('zauriscore_waitlist') || '[]');
         if (!existingList.includes(email)) {
             existingList.push(email);
-            localStorage.setItem('validator_waitlist', JSON.stringify(existingList));
+            localStorage.setItem('zauriscore_waitlist', JSON.stringify(existingList));
         }
         
         return { success: true };

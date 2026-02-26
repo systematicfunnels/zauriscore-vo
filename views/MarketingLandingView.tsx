@@ -42,9 +42,9 @@ export const MarketingLandingView: React.FC<MarketingLandingViewProps> = ({ onGo
       <nav className="max-w-6xl mx-auto w-full px-4 py-6 flex justify-between items-center">
         <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-slate-900 font-bold text-lg">V</span>
+                <span className="text-slate-900 font-bold text-lg">Z</span>
             </div>
-            <span className="font-bold text-xl tracking-tight">Validator</span>
+            <span className="font-bold text-xl tracking-tight">ZauriScore</span>
         </div>
         <button onClick={onGoToApp} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
             Login
@@ -143,7 +143,7 @@ export const MarketingLandingView: React.FC<MarketingLandingViewProps> = ({ onGo
 
       {/* Footer */}
       <footer className="border-t border-slate-800 py-8 text-center text-slate-500 text-sm">
-        <p>&copy; {new Date().getFullYear()} Validator AI. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} ZauriScore. All rights reserved.</p>
         <button onClick={onGoToApp} className="mt-2 hover:text-white transition-colors">Already have access? Login here.</button>
       </footer>
     </div>
