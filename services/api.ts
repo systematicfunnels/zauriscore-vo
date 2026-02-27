@@ -1,7 +1,7 @@
 import { UserProfile, ValidationReport, MOCK_REPORT, CustomModelConfig } from "../types";
 import { GoogleGenAI, Type } from "@google/genai";
 
-const API_URL = "http://localhost:4242/api";
+const API_URL = "/api";
 
 export const api = {
   // --- AI ---
