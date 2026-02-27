@@ -7,7 +7,11 @@ const { PrismaClient } = pkg;
 import { GoogleGenAI, Type } from "@google/genai";
 import { Resend } from 'resend';
 import { OAuth2Client } from 'google-auth-library';
-import { createServer as createViteServer } from 'vite';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const prisma = new PrismaClient();
@@ -484,15 +488,22 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
+    try {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+      console.log("Vite development middleware integrated.");
+    } catch (e) {
+      console.error("Failed to load Vite dev server:", e);
+    }
   } else {
-    app.use(express.static('dist'));
+    const distPath = path.join(__dirname, 'dist');
+    app.use(express.static(distPath));
     app.get('*', (req, res) => {
-      res.sendFile('index.html', { root: 'dist' });
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
@@ -501,4 +512,7 @@ async function startServer() {
   });
 }
 
-startServer();
+startServer().catch(err => {
+  console.error("CRITICAL: Server failed to start:", err);
+  process.exit(1);
+});
