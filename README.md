@@ -19,7 +19,7 @@ ZaurisCore-VO is tailored for entrepreneurs, startups, and innovation teams look
 - **AI & Machine Learning**: TensorFlow, Scikit-Learn
 
 ## Current Status
-As of March 2026, ZaurisCore-VO is in the beta stage, with users actively providing feedback to refine features and improve the platform.
+As of March 2026, ZaurisCore-VO is in the beta stage, refine features and improve the platform.
 
 ## Development Setup
 1. Clone the repository using `git clone https://github.com/Hemantp2124/zauriscore-vo.git`
